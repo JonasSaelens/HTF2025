@@ -107,10 +107,8 @@ async function cave(page: Page) {
 async function boss(page: Page) {
   await page.waitForURL('**/boss', { timeout: 15000 });
 
-  const MIN_X = 0; 
-  const MAX_X = 800;
-
   while (true) {
+    // Check if there's a boss bullet
     const bulletExists = await page.$('.bullet.boss');
 
     const { bossLeft, playerLeft } = await page.evaluate(() => {
@@ -126,40 +124,25 @@ async function boss(page: Page) {
     });
 
     if (bulletExists) {
-      // Dodge bullet logic
+      // Move once to dodge the bullet
       if (playerLeft < bossLeft) {
         await page.keyboard.press('ArrowRight');
       } else if (playerLeft > bossLeft) {
         await page.keyboard.press('ArrowLeft');
-      } else {
-        // Player aligned with boss bullet
-        if (playerLeft <= MIN_X) {
-          await page.keyboard.press('ArrowRight');
-        } else if (playerLeft >= MAX_X) {
-          await page.keyboard.press('ArrowLeft'); 
-        } else {
-          // If not against a wall, pick random direction to dodge
-          const direction = Math.random() < 0.5 ? 'ArrowLeft' : 'ArrowRight';
-          await page.keyboard.press(direction);
-        }
       }
-
-      // small delay to not spam too fast
-      await page.waitForTimeout(100);
 
     } else {
-      // Move toward boss and spam space
+      // Move player toward boss and spam space
       if (playerLeft < bossLeft) {
         await page.keyboard.press('ArrowRight');
       } else if (playerLeft > bossLeft) {
         await page.keyboard.press('ArrowLeft');
       }
-      await page.keyboard.press('Space');
-      await page.waitForTimeout(50);
+
+      await page.keyboard.press('Space'); // spam attack
     }
   }
 }
-
 
 test('open website and shows start button', async ({ page }) => {
   
